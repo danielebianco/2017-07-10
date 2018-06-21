@@ -6,6 +6,9 @@ package it.polito.tdp.artsmia;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.artsmia.model.ArtObject;
+import it.polito.tdp.artsmia.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -14,7 +17,9 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
 public class ArtsmiaController {
-
+	
+	private Model model;
+	
 	@FXML // ResourceBundle that was given to the FXMLLoader
 	private ResourceBundle resources;
 
@@ -41,12 +46,31 @@ public class ArtsmiaController {
 
 	@FXML
 	void doAnalizzaOggetti(ActionEvent event) {
-		txtResult.setText("doAnalizzaOggetti");
+		this.txtResult.clear();
+		this.txtObjectId.clear();
+		model.creaGrafo();
+		txtResult.setText(String.format("Grafo creato: %d vertici, %s archi\n",
+				model.getGrafo().vertexSet().size(), model.getGrafo().edgeSet().size()));
 	}
 
 	@FXML
 	void doCalcolaComponenteConnessa(ActionEvent event) {
-		txtResult.setText("doCalcolaComponenteConnessa");
+		
+		try {
+			ArtObject artOb = model.getArtObjectIdMap().get(Integer.parseInt(txtObjectId.getText()));
+			if(artOb != null) {
+				txtResult.appendText("CC del vertice " + artOb.getId() +
+						": ");
+				txtResult.appendText(String.format("%d\n", model.calcolaDimensioneCC(artOb.getId())));
+			}
+			else {
+				txtResult.appendText("Non esiste un object con questo id.\n");
+			}
+		} catch(RuntimeException e) {
+			this.txtResult.clear();
+			this.txtResult.setText("Errore inserimento.\n");
+		}
+			
 	}
 
 	@FXML
@@ -62,6 +86,15 @@ public class ArtsmiaController {
 		assert btnAnalizzaOggetti != null : "fx:id=\"btnAnalizzaOggetti\" was not injected: check your FXML file 'Artsmia.fxml'.";
 		assert txtObjectId != null : "fx:id=\"txtObjectId\" was not injected: check your FXML file 'Artsmia.fxml'.";
 		assert txtResult != null : "fx:id=\"txtResult\" was not injected: check your FXML file 'Artsmia.fxml'.";
+		
+		txtResult.setStyle("-fx-font-family: monospace");
+	}
 
+	public void setModel(Model model) {
+		this.model = model;		
+	}
+
+	public Model getModel() {
+		return model;
 	}
 }
